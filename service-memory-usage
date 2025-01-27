@@ -1,0 +1,29 @@
+# Settings
+$serviceName = "Schedule"
+$filePath = "c:\Temp\"
+$fileName = "ServiceMonitor.csv"
+
+# Main Code
+
+$filePathFull = $filePath + (Get-Date -Format "yyyy-MM-dd") + "_" + $fileName
+
+$service = Get-CimInstance -class win32_service | Where-Object name -eq $serviceName | select name, processid
+
+$process = Get-Process | Where-Object ID -EQ $service.processid | Select Name,SI,Handles,VM,WS,PM,NPM,NonpagedSystemMemorySize,NonpagedSystemMemorySize64,PagedMemorySize,PagedMemorySize64,PagedSystemMemorySize,PagedSystemMemorySize64,PeakPagedMemorySize,PeakPagedMemorySize64,PeakWorkingSet,PeakWorkingSet64,PeakVirtualMemorySize,PeakVirtualMemorySize64,PrivateMemorySize,PrivateMemorySize64
+
+Clear-Host
+Write-Host '********* ServiceName, PID and ProcessName ******'
+Write-Host 'ServiceName:' $service.name 
+Write-Host 'ID:' $process.Id 
+Write-Host 'ProcessName:' $process.Name
+Write-Host 'Handles:' $process.Handles
+Write-Host 'NPM(K) None Paged Memory:' $process.NPM
+Write-Host 'PM(K) Pageable Memory:' $process.PM
+Write-Host 'WS(K) Working Set Memory:' $process.WS
+Write-Host 'CPU Processor Time:' $process.CPU
+
+$time = Get-Date -format "HH:mm"
+
+Add-Member -InputObject $process -MemberType NoteProperty -Name "Date" -Value $time
+
+$process | Export-Csv $filePathFull -Append
